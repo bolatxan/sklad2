@@ -571,3 +571,72 @@ function setupSwipeNavigation() {
     });
   });
 }
+/* ----------  Функции и события для склада  ---------- */
+function openWarehouseModal() {
+  document.getElementById('warehouseModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('warehouseForm').reset();
+  updateWarehouseCost();
+}
+
+function closeWarehouseModal() {
+  document.getElementById('warehouseModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function updateWarehouseCost() {
+  const yuan = parseFloat(document.getElementById('warehouseCostYuan').value) || 0;
+  const qty  = parseInt(document.getElementById('warehouseStock').value) || 1;
+  const cost = yuan * appData.settings.exchangeRate * qty;
+  document.getElementById('warehouseCostTenge').textContent = cost.toLocaleString() + ' ₸';
+}
+
+function handleWarehouseSubmit(e) {
+  e.preventDefault();
+  const product = document.getElementById('warehouseProduct').value;
+  const size    = document.getElementById('warehouseSize').value;
+  const color   = document.getElementById('warehouseColor').value;
+  const stock   = parseInt(document.getElementById('warehouseStock').value);
+  const costY   = parseFloat(document.getElementById('warehouseCostYuan').value);
+
+  if (!product || !size || !color || stock <= 0 || costY < 0) {
+    alert('Заполните все поля корректно!');
+    return;
+  }
+
+  const existed = appData.warehouse.find(
+    item => item.product === product && item.size === size && item.color === color
+  );
+
+  if (existed) {
+    existed.stock += stock;
+    existed.costPriceYuan = costY; // можно хранить последнюю цену
+  } else {
+    appData.warehouse.push({
+      id: nextWarehouseId++,
+      product,
+      size,
+      color,
+      stock,
+      costPriceYuan: costY
+    });
+  }
+
+  renderWarehouse();
+  closeWarehouseModal();
+}
+
+/* --- Добавляем слушатели в setupEventListeners() --- */
+document.getElementById('addWarehouseBtn')
+        .addEventListener('click', openWarehouseModal);
+document.getElementById('closeWarehouseModal')
+        .addEventListener('click', closeWarehouseModal);
+document.getElementById('cancelWarehouse')
+        .addEventListener('click', closeWarehouseModal);
+document.getElementById('warehouseForm')
+        .addEventListener('submit', handleWarehouseSubmit);
+/* --- Автоматический перерасчёт себестоимости --- */
+['warehouseCostYuan', 'warehouseStock'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', updateWarehouseCost);
+});
