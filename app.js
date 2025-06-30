@@ -641,6 +641,148 @@ function handleWarehouseSubmit(e) {
   renderWarehouse();
   closeWarehouseModal();
 }
+/* ----------  С К Л А Д  ---------- */
+
+// открыть / закрыть модалки
+function openWarehouseModal() {
+  document.getElementById('warehouseModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('warehouseForm').reset();
+  updateWarehouseCost();
+}
+function closeWarehouseModal() {
+  document.getElementById('warehouseModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+function openEditWarehouseModal(item) {
+  const el = document.getElementById('editWarehouseModal');
+  el.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // заполняем поля
+  document.getElementById('editWarehouseProduct').value  = item.product;
+  document.getElementById('editWarehouseSize').value     = item.size;
+  document.getElementById('editWarehouseColor').value    = item.color;
+  document.getElementById('editWarehouseStock').value    = item.stock;
+  document.getElementById('editWarehouseCostYuan').value = item.costPriceYuan;
+  document.getElementById('editWarehouseCostTenge').textContent =
+      (item.costPriceYuan * appData.settings.exchangeRate).toLocaleString() + ' ₸';
+
+  // временно сохраняем id редактируемой записи
+  el.dataset.editId = item.id;
+}
+function closeEditWarehouseModal() {
+  document.getElementById('editWarehouseModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// пересчёт себестоимости
+function updateWarehouseCost() {
+  const y = parseFloat(document.getElementById('warehouseCostYuan').value) || 0;
+  const q = parseInt(document.getElementById('warehouseStock').value) || 1;
+  document.getElementById('warehouseCostTenge').textContent =
+      (y * q * appData.settings.exchangeRate).toLocaleString() + ' ₸';
+}
+function updateEditWarehouseCost() {
+  const y = parseFloat(document.getElementById('editWarehouseCostYuan').value) || 0;
+  const q = parseInt(document.getElementById('editWarehouseStock').value) || 1;
+  document.getElementById('editWarehouseCostTenge').textContent =
+      (y * q * appData.settings.exchangeRate).toLocaleString() + ' ₸';
+}
+
+// добавление новой позиции
+function handleWarehouseSubmit(e) {
+  e.preventDefault();
+
+  const product = document.getElementById('warehouseProduct').value.trim();
+  const size    = document.getElementById('warehouseSize').value.trim();
+  const color   = document.getElementById('warehouseColor').value.trim();
+  const stock   = parseInt(document.getElementById('warehouseStock').value);
+  const costY   = parseFloat(document.getElementById('warehouseCostYuan').value);
+
+  if (!product || !size || !color || stock <= 0 || costY < 0) {
+    alert('Заполните все поля корректно!');
+    return;
+  }
+
+  const existed = appData.warehouse
+    .find(i => i.product === product && i.size === size && i.color === color);
+
+  if (existed) {
+    existed.stock += stock;        // пополняем остаток
+    existed.costPriceYuan = costY; // сохраняем последнюю цену
+  } else {
+    appData.warehouse.push({
+      id: nextWarehouseId++,
+      product, size, color,
+      stock,
+      costPriceYuan: costY
+    });
+  }
+
+  renderWarehouse();
+  populateFormSelects();  // обновляем выпадающие списки в заказах
+  closeWarehouseModal();
+}
+
+// сохранение изменений позиции
+function handleEditWarehouseSubmit(e) {
+  e.preventDefault();
+  const modal = document.getElementById('editWarehouseModal');
+  const id = parseInt(modal.dataset.editId, 10);
+
+  const item = appData.warehouse.find(i => i.id === id);
+  if (!item) return;
+
+  item.product       = document.getElementById('editWarehouseProduct').value.trim();
+  item.size          = document.getElementById('editWarehouseSize').value.trim();
+  item.color         = document.getElementById('editWarehouseColor').value.trim();
+  item.stock         = parseInt(document.getElementById('editWarehouseStock').value);
+  item.costPriceYuan = parseFloat(document.getElementById('editWarehouseCostYuan').value);
+
+  renderWarehouse();
+  populateFormSelects();
+  closeEditWarehouseModal();
+}
+
+// рендер списка склада
+function renderWarehouse() {
+  const list = document.getElementById('warehouseList');
+  list.innerHTML = '';
+  appData.warehouse.forEach(item => {
+    const html = `
+      <div class=\"warehouse-item\" onclick=\"openEditWarehouseModal(appData.warehouse.find(i=>i.id===${item.id}))\">
+        <div class=\"warehouse-header\">
+          <span class=\"warehouse-product\">${item.product}</span>
+          <span class=\"warehouse-stock${item.stock <= 3 ? ' low' : ''}\">${item.stock} шт.</span>
+        </div>
+        <div class=\"warehouse-details\">
+          <div>Размер: <strong>${item.size}</strong></div>
+          <div>Цвет: <strong>${item.color}</strong></div>
+          <div>Себестоимость: 
+               <strong>${(item.costPriceYuan * appData.settings.exchangeRate).toLocaleString()} ₸</strong>
+          </div>
+        </div>
+      </div>`;
+    list.insertAdjacentHTML('beforeend', html);
+  });
+}
+
+/* ----------  Слушатели  ---------- */
+document.getElementById('addWarehouseBtn')      .addEventListener('click', openWarehouseModal);
+document.getElementById('closeWarehouseModal')  .addEventListener('click', closeWarehouseModal);
+document.getElementById('cancelWarehouse')      .addEventListener('click', closeWarehouseModal);
+document.getElementById('warehouseForm')        .addEventListener('submit', handleWarehouseSubmit);
+['warehouseCostYuan','warehouseStock'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateWarehouseCost);
+});
+
+document.getElementById('closeEditWarehouseModal').addEventListener('click', closeEditWarehouseModal);
+document.getElementById('cancelEditWarehouse')     .addEventListener('click', closeEditWarehouseModal);
+document.getElementById('editWarehouseForm')       .addEventListener('submit', handleEditWarehouseSubmit);
+['editWarehouseCostYuan','editWarehouseStock'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateEditWarehouseCost);
+});
 
 /* --- Добавляем слушатели в setupEventListeners() --- */
 document.getElementById('addWarehouseBtn')
