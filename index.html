@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система управления заказами</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <header class="app-header">
+            <h1>Управление заказами</h1>
+        </header>
+
+        <main class="app-main">
+            <!-- Вкладка Заказы -->
+            <div id="orders-tab" class="tab-content active">
+                <div class="section-header">
+                    <h2>Заказы</h2>
+                    <button class="btn btn--primary btn--sm" onclick="showAddOrderForm()">+ Новый заказ</button>
+                </div>
+
+                <!-- Фильтры заказов -->
+                <div class="filters-panel">
+                    <select id="order-filter-status" class="form-control" onchange="filterOrders()">
+                        <option value="">Все статусы</option>
+                        <option value="Не оплачен">Не оплачен</option>
+                        <option value="Частично оплачен">Частично оплачен</option>
+                        <option value="Оплачен">Оплачен</option>
+                    </select>
+                    <select id="order-filter-city" class="form-control" onchange="filterOrders()">
+                        <option value="">Все города</option>
+                    </select>
+                </div>
+
+                <!-- Список заказов -->
+                <div id="orders-list" class="orders-list"></div>
+
+                <!-- Форма добавления заказа -->
+                <div id="add-order-modal" class="modal hidden">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Новый заказ</h3>
+                            <button class="modal-close" onclick="hideAddOrderForm()">&times;</button>
+                        </div>
+                        <form id="add-order-form" class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">ФИО клиента</label>
+                                <input type="text" id="client-name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Телефон</label>
+                                <input type="tel" id="client-phone" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Город</label>
+                                <input type="text" id="client-city" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Товар</label>
+                                <select id="order-product" class="form-control" onchange="updateProductOptions()" required>
+                                    <option value="">Выберите товар</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Размер</label>
+                                <select id="order-size" class="form-control" onchange="updatePricing()" required>
+                                    <option value="">Выберите размер</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Цвет</label>
+                                <select id="order-color" class="form-control" onchange="updatePricing()" required>
+                                    <option value="">Выберите цвет</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Количество</label>
+                                <input type="number" id="order-quantity" class="form-control" min="1" value="1" onchange="updatePricing()" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Закупочная цена (¥)</label>
+                                <input type="number" id="order-buy-price" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Себестоимость (₸)</label>
+                                <input type="number" id="order-cost-price" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Итоговая сумма (₸)</label>
+                                <input type="number" id="order-total-sum" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Предоплата (₸)</label>
+                                <input type="number" id="order-prepayment" class="form-control" value="0" onchange="updatePaymentStatus()">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Доплата (₸)</label>
+                                <input type="number" id="order-final-payment" class="form-control" value="0" onchange="updatePaymentStatus()">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn--primary btn--full-width">Добавить заказ</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вкладка Склад -->
+            <div id="warehouse-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>Склад</h2>
+                    <button class="btn btn--primary btn--sm" onclick="showAddProductForm()">+ Добавить товар</button>
+                </div>
+
+                <!-- Поиск товаров -->
+                <div class="search-panel">
+                    <input type="text" id="warehouse-search" class="form-control" placeholder="Поиск товаров..." onkeyup="searchWarehouse()">
+                </div>
+
+                <!-- Список товаров на складе -->
+                <div id="warehouse-list" class="warehouse-list"></div>
+
+                <!-- Форма добавления товара -->
+                <div id="add-product-modal" class="modal hidden">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Добавить товар</h3>
+                            <button class="modal-close" onclick="hideAddProductForm()">&times;</button>
+                        </div>
+                        <form id="add-product-form" class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Название товара</label>
+                                <input type="text" id="product-name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Размер</label>
+                                <input type="text" id="product-size" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Цвет</label>
+                                <input type="text" id="product-color" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Закупочная цена (¥)</label>
+                                <input type="number" id="product-price" class="form-control" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Количество</label>
+                                <div class="quantity-controls">
+                                    <button type="button" class="btn btn--secondary btn--sm" onclick="adjustQuantity(-1)">-</button>
+                                    <input type="number" id="product-stock" class="form-control quantity-input" min="0" value="0" required>
+                                    <button type="button" class="btn btn--secondary btn--sm" onclick="adjustQuantity(1)">+</button>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn--outline" onclick="duplicateProduct()">Дублировать</button>
+                                <button type="submit" class="btn btn--primary">Добавить товар</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вкладка Аналитика -->
+            <div id="analytics-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>Аналитика</h2>
+                </div>
+
+                <!-- Настройки курса -->
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Настройки</h3>
+                        <div class="form-group">
+                            <label class="form-label">Курс ¥ → ₸</label>
+                            <input type="number" id="exchange-rate" class="form-control" step="0.1" onchange="updateExchangeRate()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ключевые показатели -->
+                <div class="analytics-grid">
+                    <div class="card">
+                        <div class="card__body">
+                            <h4>Общая сумма продаж</h4>
+                            <div class="metric-value" id="total-sales">0 ₸</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card__body">
+                            <h4>Общая себестоимость</h4>
+                            <div class="metric-value" id="total-cost">0 ₸</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card__body">
+                            <h4>Общая прибыль</h4>
+                            <div class="metric-value" id="total-profit">0 ₸</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card__body">
+                            <h4>Количество заказов</h4>
+                            <div class="metric-value" id="total-orders">0</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card__body">
+                            <h4>Рентабельность</h4>
+                            <div class="metric-value" id="profitability">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Нижняя навигация -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchTab('orders')">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Заказы</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('warehouse')">
+                <span class="nav-icon">📦</span>
+                <span class="nav-label">Склад</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('analytics')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Аналитика</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
