@@ -237,6 +237,22 @@ function populateFormSelects() {
     colorSelect.innerHTML += `<option value="${color}">${color}</option>`;
   });
 }
+// После существующих заполнений:
+const wProduct = document.getElementById('warehouseProduct');
+const wSize    = document.getElementById('warehouseSize');
+const wColor   = document.getElementById('warehouseColor');
+
+wProduct.innerHTML = wSize.innerHTML = wColor.innerHTML = ''; // очистка
+
+appData.settings.products.forEach(p =>
+  wProduct.innerHTML += `<option value="${p}">${p}</option>`
+);
+appData.settings.sizes.forEach(s =>
+  wSize.innerHTML    += `<option value="${s}">${s}</option>`
+);
+appData.settings.colors.forEach(c =>
+  wColor.innerHTML   += `<option value="${c}">${c}</option>`
+);
 
 function updateOrderCalculations() {
   const product = document.getElementById('productSelect').value;
