@@ -43,51 +43,51 @@ let appData = {
   warehouse: [
     {
       id: 1,
-      product: "Кроссовки Nike",
-      size: "38",
-      color: "Белый",
-      stock: 5,
-      costPriceYuan: 250
+      product: "Пальто",
+      size: "M",
+      color: "Серый",
+      stock: 4,
+      costPriceYuan: 130
     },
     {
       id: 2,
-      product: "Кроссовки Nike",
-      size: "39",
-      color: "Белый",
+      product: "Пальто",
+      size: "S",
+      color: "Серый",
       stock: 3,
-      costPriceYuan: 250
+      costPriceYuan: 130
     },
     {
       id: 3,
-      product: "Куртка Adidas",
-      size: "L",
-      color: "Черный",
-      stock: 8,
-      costPriceYuan: 300
+      product: "Пальто",
+      size: "S",
+      color: "Верблюжий",
+      stock: 2,
+      costPriceYuan: 130
     },
     {
       id: 4,
-      product: "Куртка Adidas",
+      product: "Пальто",
       size: "M",
-      color: "Черный",
-      stock: 12,
-      costPriceYuan: 300
+      color: "Верблюжий",
+      stock: 1,
+      costPriceYuan: 130
     },
     {
       id: 5,
-      product: "Футболка Nike",
-      size: "S",
-      color: "Синий",
-      stock: 15,
-      costPriceYuan: 120
+      product: "Пальто",
+      size: "M",
+      color: "Белый",
+      stock: 1,
+      costPriceYuan: 130
     }
   ],
   settings: {
     exchangeRate: 50,
     cities: ["Астана", "Алматы", "Шымкент", "Актобе", "Тараз"],
-    products: ["Кроссовки Nike", "Куртка Adidas", "Футболка Nike", "Шорты Puma"],
-    sizes: ["XS", "S", "M", "L", "XL", "36", "37", "38", "39", "40", "41", "42"],
-    colors: ["Белый", "Черный", "Синий", "Красный", "Зеленый", "Серый"]
+    products: ["Пальто", "Пуховик-дл", "Пуховик-крт", "Лабубу", "другое"],
+    sizes: ["XS", "S", "M", "L", "XL"],
+    colors: ["Белый", "Черный", "Коричневый", "Шоколад", "Верблюжий", "Серый", "нет"]
   }
 };
 
